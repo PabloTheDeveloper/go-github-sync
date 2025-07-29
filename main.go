@@ -79,11 +79,24 @@ func ExtractGitRepos(basepath string) {
 	}
 }
 
+// ConvertDashToAllCapsUnderscore converts a dash-cased string to all caps with underscores.
+func ConvertDashToAllCapsUnderscore(s string) string {
+	// Convert the resulting string to uppercase
+	allCaps := strings.ToUpper(s)
+
+	// Replace all dashes with underscores
+	dashRemoved := strings.ReplaceAll(allCaps, "-", "_")
+	// Replace dots with underscores (one of my repos uses dots.)
+	underscored := strings.ReplaceAll(dashRemoved, ".", "_")
+
+	return underscored
+}
+
 func GenerateAliasFile(repos []GitRepo) string {
 	content := ""
 	for _, repo := range repos {
-		content = content + fmt.Sprintf("alias %s='cd %s && ls && cat README.md && git pull'\n", repo.Name, repo.Path)
-		content = content + fmt.Sprintf("export %s=\"%s\"\n", repo.Name, repo.Path)
+		content = content + fmt.Sprintf("abbr --add %s 'cd %s && ls && cat README.md && git pull'\n", repo.Name, repo.Path)
+		content = content + fmt.Sprintf("export %s=\"%s\"\n", ConvertDashToAllCapsUnderscore(repo.Name), repo.Path)
 	}
 	return content
 }
