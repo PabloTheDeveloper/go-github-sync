@@ -19,6 +19,11 @@ type GitRepo struct {
 	Path string `json:"path"`
 }
 
+func (gr GitRepo) String() string {
+	return fmt.Sprintf(
+		"Git Repo name: %s\n...At Path: %s", gr.Name, gr.Path)
+}
+
 func ContainDotGitFolder(files []fs.FileInfo) bool {
 	for _, f := range files {
 		if f.IsDir() && f.Name() == ".git" {
@@ -117,6 +122,8 @@ func main() {
 	// and merges differences.
 	for fetched_key, fetched_val := range fetched {
 		if existing_val, ok := existing[fetched_key]; !ok {
+			fmt.Printf("Pulling and install newly fetched repos...\n")
+			fmt.Println(existing_val)
 			Command("mkdir", "-p", filepath.Dir(fetched_val.Path))
 			fmt.Println("gh repo clone", filepath.Dir(fetched_val.Path))
 			os.Chdir(filepath.Dir(fetched_val.Path))
@@ -131,6 +138,8 @@ func main() {
 
 	// Pull repos, and pushes commits.
 	for existing_key, existing_val := range existing {
+		fmt.Printf("Syncing existing repos...\n")
+		fmt.Println(existing_val)
 		os.Chdir(filepath.Dir(existing_val.Path))
 		Command("git", "pull")
 		if _, ok := fetched[existing_key]; !ok {
