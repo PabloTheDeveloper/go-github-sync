@@ -117,8 +117,10 @@ func main() {
 	// and merges differences.
 	for fetched_key, fetched_val := range fetched {
 		if existing_val, ok := existing[fetched_key]; !ok {
-			Command("mkdir", "-p", existing_val.Path)
-			Command("gh", "repo", "clone", fetched_val.Name, fetched_val.Path)
+			Command("mkdir", "-p", filepath.Dir(fetched_val.Path))
+			fmt.Println("gh repo clone", filepath.Dir(fetched_val.Path))
+			os.Chdir(filepath.Dir(fetched_val.Path))
+			Command("gh", "repo", "clone", fetched_val.Name)
 		} else {
 			if existing_val.Path != fetched_val.Path {
 				panic("shouldn't happen, but if it does, fix it manually.")
@@ -129,7 +131,8 @@ func main() {
 
 	// Pull repos, and pushes commits.
 	for existing_key, existing_val := range existing {
-		Command("gh", "repo", "sync", fmt.Sprintf("PabloTheDeveloper/%s", existing_val.Name))
+		os.Chdir(filepath.Dir(existing_val.Path))
+		Command("git", "pull")
 		if _, ok := fetched[existing_key]; !ok {
 			fetched[existing_key] = existing_val
 		}
