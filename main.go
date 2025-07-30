@@ -103,7 +103,7 @@ func GenerateAliasFile(repos []GitRepo) string {
 
 func main() {
 	// Read datafile
-	if _, err := os.Stat("home/dev/.generated_repo_list.json"); err != nil {
+	if _, err := os.Stat("/home/dev/.generated_repo_list.json"); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Println("No datafile right now. Will generate one.")
 		} else {
@@ -111,7 +111,8 @@ func main() {
 		}
 		// file exists
 	} else {
-		content, err := os.ReadFile("home/dev/.generated_repo_list.json")
+		fmt.Println("Datafile found.")
+		content, err := os.ReadFile("/home/dev/.generated_repo_list.json")
 		if err != nil {
 			log.Println("Error: ", err)
 		}
@@ -128,7 +129,7 @@ func main() {
 		existing[repo.Name] = repo
 	}
 	fetched := map[string]GitRepo{}
-	for _, repo := range repos {
+	for _, repo := range fetchedRepos {
 		fetched[repo.Name] = repo
 	}
 	// Clones any repos I need to fetch
@@ -136,7 +137,7 @@ func main() {
 	for fetched_key, fetched_val := range fetched {
 		if existing_val, ok := existing[fetched_key]; !ok {
 			fmt.Printf("Pulling and install newly fetched repos...\n")
-			fmt.Println(existing_val)
+			fmt.Println(fetched_val)
 			Command("mkdir", "-p", filepath.Dir(fetched_val.Path))
 			fmt.Println("gh repo clone", filepath.Dir(fetched_val.Path))
 			os.Chdir(filepath.Dir(fetched_val.Path))
