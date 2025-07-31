@@ -156,6 +156,8 @@ func main() {
 		fmt.Println(existing_val)
 		os.Chdir(filepath.Dir(existing_val.Path))
 		Command("git", "pull")
+		// I need to be very careful to not delete my changes by accident!
+		Command("git", "push")
 		if _, ok := fetched[existing_key]; !ok {
 			fetched[existing_key] = existing_val
 		}
