@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -44,6 +45,10 @@ func IAmRepoAuthor(repoPath string) bool {
 }
 
 func Command(bin string, cmdOps ...string) {
+	if *dryRun {
+		fmt.Println(bin, cmdOps)
+		return
+	}
 	cmd := exec.Command(bin, cmdOps...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -95,11 +100,13 @@ func ConvertDashToAllCapsUnderscore(s string) string {
 func GenerateAliasFile(repos []GitRepo) string {
 	content := ""
 	for _, repo := range repos {
-		content = content + fmt.Sprintf("abbr --add %s 'cd %s && ls && cat README.md && git pull'\n", repo.Name, repo.Path)
+		content = content + fmt.Sprintf("abbr --add %s 'cd %s && ls && cat README.md && git pull'\n", ConvertDashToAllCapsUnderscore(repo.Name), repo.Path)
 		content = content + fmt.Sprintf("export %s=\"%s\"\n", ConvertDashToAllCapsUnderscore(repo.Name), repo.Path)
 	}
 	return content
 }
+
+var dryRun = flag.Bool("dry_run", true, "If true, it simply prints out the commands it would normally do.")
 
 func main() {
 	// Read datafile
@@ -158,6 +165,12 @@ func main() {
 		Command("git", "pull")
 		// I need to be very careful to not delete my changes by accident!
 		Command("git", "push")
+		// Also build any go packages for all scripts in my repos/go/ path
+		if parentDir := filepath.Base(existing_val.Path); parentDir == "go" {
+			fmt.Println("installing package:", existing_val.Name)
+			Command("go", "build")
+			Command("go", "install")
+		}
 		if _, ok := fetched[existing_key]; !ok {
 			fetched[existing_key] = existing_val
 		}
