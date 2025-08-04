@@ -106,7 +106,7 @@ func GenerateAliasFile(repos []GitRepo) string {
 	return content
 }
 
-var dryRun = flag.Bool("dry_run", true, "If true, it simply prints out the commands it would normally do.")
+var dryRun = flag.Bool("dry_run", false, "If true, it simply prints out the commands it would normally do.")
 
 func main() {
 	// Read datafile
